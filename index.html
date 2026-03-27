@@ -11,7 +11,7 @@
   /* DESKTOP */
   #desktop {
     width: 100%; height: 100%;
-    background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Windows_11_Default_Desktop.png/1280px-Windows_11_Default_Desktop.png') center/cover no-repeat;
+    background: url('https://4kwallpapers.com/images/walls/thumbs_3t/5616.jpg') center/cover no-repeat;
     position: relative;
   }
 
@@ -705,88 +705,6 @@ const appDefs = {
 
 
 
-let feCurrent = 'root';
-        let feHistory = ['root'];
-        let feHistIdx = 0;
-
-        function feGetNode(path) {
-          if(path === 'root') return feFS.root;
-          const parts = path.split('/');
-          let node = feFS.root;
-          for(const p of parts) {
-            if(node.children && node.children[p]) node = node.children[p];
-            else return null;
-          }
-          return node;
-        }
-
-        function feOpen(pathOrName) {
-          // If it's a top-level folder name, resolve path
-          let path = pathOrName;
-          if(['Documents','Downloads','Pictures'].includes(pathOrName)) path = pathOrName;
-          const node = feGetNode(path);
-          if(!node) return;
-          if(node.type === 'file') return; // no-op for files for now
-          feCurrent = path;
-          // trim forward history
-          feHistory = feHistory.slice(0, feHistIdx+1);
-          feHistory.push(path);
-          feHistIdx = feHistory.length - 1;
-          feRender();
-        }
-
-        function feNavigate(dir) {
-          if(dir==='back' && feHistIdx > 0){ feHistIdx--; feCurrent = feHistory[feHistIdx]; feRender(); }
-          else if(dir==='fwd' && feHistIdx < feHistory.length-1){ feHistIdx++; feCurrent = feHistory[feHistIdx]; feRender(); }
-          else if(dir==='up'){
-            if(feCurrent === 'root') return;
-            const parts = feCurrent.split('/');
-            parts.pop();
-            const up = parts.length === 0 ? 'root' : parts.join('/');
-            feOpen(up);
-          }
-        }
-
-        function feRender() {
-          const node = feGetNode(feCurrent);
-          if(!node || !node.children) return;
-          const grid = document.getElementById('fe-grid');
-          const addr = document.getElementById('fe-addr');
-          const backBtn = document.getElementById('fe-back');
-          const fwdBtn = document.getElementById('fe-fwd');
-
-          // Address bar
-          if(feCurrent === 'root') addr.textContent = '💻 This PC';
-          else { const parts = feCurrent.split('/'); addr.textContent = '💻 This PC › ' + parts.join(' › '); }
-
-          // Back/fwd buttons
-          backBtn.style.opacity = feHistIdx > 0 ? '1' : '0.4';
-          backBtn.style.cursor = feHistIdx > 0 ? 'pointer' : 'default';
-          fwdBtn.style.opacity = feHistIdx < feHistory.length-1 ? '1' : '0.4';
-          fwdBtn.style.cursor = feHistIdx < feHistory.length-1 ? 'pointer' : 'default';
-
-          // Render items — folders first, then files
-          const entries = Object.entries(node.children);
-          const folders = entries.filter(([,v])=>v.type==='folder');
-          const files = entries.filter(([,v])=>v.type==='file');
-          const sorted = [...folders, ...files];
-
-          grid.innerHTML = sorted.map(([name, item]) => {
-            const isFolder = item.type === 'folder';
-            const childPath = feCurrent === 'root' ? name : feCurrent + '/' + name;
-            const dblHandler = isFolder ? \`feOpen('\${childPath}')\` : '';
-            return \`<div class="fe-file" ondblclick="\${dblHandler}" title="\${name}">
-              <div class="icon">\${item.icon || (isFolder ? '📁' : '📄')}</div>
-              <div class="name">\${name}</div>
-            </div>\`;
-          }).join('');
-        }
-
-        // Initial render
-        feRender();
-      <\/script>
-    </div>`
-  },
   notepad: {
     title: '📝 Notepad',
     width: 600, height: 420,
@@ -898,6 +816,80 @@ let feCurrent = 'root';
   }
 };
 
+let feCurrent = 'root';
+let feHistory = ['root'];
+let feHistIdx = 0;
+
+function feGetNode(path) {
+  if (path === 'root') return feFS.root;
+  const parts = path.split('/');
+  let node = feFS.root;
+  for (const p of parts) {
+    if (node.children && node.children[p]) node = node.children[p];
+    else return null;
+  }
+  return node;
+}
+
+function feOpen(pathOrName) {
+  let path = pathOrName;
+  if (path === 'This PC') path = 'root';
+  if (['Documents','Downloads','Pictures'].includes(pathOrName)) path = pathOrName;
+  const node = feGetNode(path);
+  if (!node) return;
+  if (node.type === 'file') return;
+  feCurrent = path;
+  feHistory = feHistory.slice(0, feHistIdx + 1);
+  feHistory.push(path);
+  feHistIdx = feHistory.length - 1;
+  feRender();
+}
+
+function feNavigate(dir) {
+  if (dir === 'back' && feHistIdx > 0) { feHistIdx--; feCurrent = feHistory[feHistIdx]; feRender(); }
+  else if (dir === 'fwd' && feHistIdx < feHistory.length - 1) { feHistIdx++; feCurrent = feHistory[feHistIdx]; feRender(); }
+  else if (dir === 'up') {
+    if (feCurrent === 'root') return;
+    const parts = feCurrent.split('/');
+    parts.pop();
+    const up = parts.length === 0 ? 'root' : parts.join('/');
+    feOpen(up);
+  }
+}
+
+function feRender() {
+  const node = feGetNode(feCurrent);
+  if (!node || !node.children) return;
+  const grid = document.getElementById('fe-grid');
+  const addr = document.getElementById('fe-addr');
+  const backBtn = document.getElementById('fe-back');
+  const fwdBtn = document.getElementById('fe-fwd');
+  if (!grid || !addr || !backBtn || !fwdBtn) return;
+
+  if (feCurrent === 'root') addr.textContent = '💻 This PC';
+  else { const parts = feCurrent.split('/'); addr.textContent = '💻 This PC › ' + parts.join(' › '); }
+
+  backBtn.style.opacity = feHistIdx > 0 ? '1' : '0.4';
+  backBtn.style.cursor = feHistIdx > 0 ? 'pointer' : 'default';
+  fwdBtn.style.opacity = feHistIdx < feHistory.length - 1 ? '1' : '0.4';
+  fwdBtn.style.cursor = feHistIdx < feHistory.length - 1 ? 'pointer' : 'default';
+
+  const entries = Object.entries(node.children);
+  const folders = entries.filter(([,v]) => v.type === 'folder');
+  const files = entries.filter(([,v]) => v.type === 'file');
+  const sorted = [...folders, ...files];
+
+  grid.innerHTML = sorted.map(([name, item]) => {
+    const isFolder = item.type === 'folder';
+    const childPath = feCurrent === 'root' ? name : feCurrent + '/' + name;
+    const dblHandler = isFolder ? `feOpen('${childPath}')` : '';
+    return `<div class="fe-file" ondblclick="${dblHandler}" title="${name}">
+      <div class="icon">${item.icon || (isFolder ? '📁' : '📄')}</div>
+      <div class="name">${name}</div>
+    </div>`;
+  }).join('');
+}
+
 function openApp(id) {
   if (openWindows[id]) {
     bringToFront(openWindows[id]);
@@ -937,6 +929,13 @@ function openApp(id) {
   makeDraggable(win, id);
   makeResizable(win);
   updateTaskbarBtn(id, true);
+
+  if (id === 'explorer') {
+    feCurrent = 'root';
+    feHistory = ['root'];
+    feHistIdx = 0;
+    feRender();
+  }
 }
 
 function bringToFront(win) {
