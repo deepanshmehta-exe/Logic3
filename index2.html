@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows 11</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+  body { width: 100vw; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+
+  /* DESKTOP */
+  #desktop {
+    width: 100%; height: 100%;
+    background: url('https://4kwallpapers.com/images/walls/thumbs_3t/5616.jpg') center/cover no-repeat;
+    position: relative;
+  }
+
+  /* DESKTOP ICONS */
+  #desktop-icons {
+    position: absolute;
+    top: 16px; left: 16px;
+    display: flex; flex-direction: row;
+    gap: 8px;
+    z-index: 100;
+  }
+  .desk-icon {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: 8px 10px; border-radius: 8px; cursor: pointer;
+    width: 76px;
+    transition: background 0.15s;
+  }
+  .desk-icon:hover { background: rgba(255,255,255,0.18); }
+  .desk-icon:active { background: rgba(255,255,255,0.28); }
+  .desk-icon.selected { background: rgba(0,120,212,0.45); outline: 1px solid rgba(0,120,212,0.8); }
+  .desk-icon-img {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+  }
+  .desk-icon-label {
+    color: white; font-size: 11.5px; text-align: center;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6);
+    line-height: 1.3; word-break: break-word;
+  }
+
+  /* TASKBAR */
+  #taskbar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 48px;
+    background: rgba(20,20,30,0.85);
+    backdrop-filter: blur(30px);
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    z-index: 9999;
+  }
+  .taskbar-icons { display: flex; align-items: center; gap: 2px; }
+  .tb-btn {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .tb-btn:hover { background: rgba(255,255,255,0.1); }
+  .tb-btn svg, .tb-btn img { width: 24px; height: 24px; }
+  .tb-btn .dot {
+    position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px; border-radius: 50%;
+    background: #60cdff;
+  }
+
+  /* CLOCK */
+  #clock-area {
+    position: absolute; right: 12px; top: 0; bottom: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: white; font-size: 12px; line-height: 1.4;
+    cursor: pointer; padding: 0 8px; border-radius: 6px;
+  }
+  #clock-area:hover { background: rgba(255,255,255,0.1); }
+  #clock-time { font-size: 13px; font-weight: 400; }
+  #clock-date { font-size: 11px; }
+
+  /* START MENU */
+  #start-menu {
+    position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%);
+    width: 640px; height: 480px;
+    background: rgba(30,30,42,0.97);
+    backdrop-filter: blur(40px);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+    z-index: 9998;
+    display: none;
+    flex-direction: column;
+    padding: 24px;
+    overflow: hidden;
+  }
+  #start-menu.open { display: flex; }
+  .start-search {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 8px 14px; margin-bottom: 24px;
+    color: white;
+  }
+  .start-search input {
+    background: none; border: none; outline: none;
+    color: white; font-size: 14px; width: 100%;
+  }
+  .start-search input::placeholder { color: rgba(255,255,255,0.5); }
+  .pinned-label { color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 14px; }
+  .pinned-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 24px; }
+  .pinned-app {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 10px 6px; border-radius: 8px; cursor: pointer; transition: background 0.15s;
+  }
+  .pinned-app:hover { background: rgba(255,255,255,0.1); }
+  .pinned-app .icon { width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .pinned-app .name { color: white; font-size: 11px; text-align: center; }
+  .recommended-label { color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 12px; }
+  .recommended-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .rec-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: background 0.15s;
+  }
+  .rec-item:hover { background: rgba(255,255,255,0.08); }
+  .rec-item .icon { font-size: 22px; }
+  .rec-item .info .name { color: white; font-size: 13px; }
+  .rec-item .info .time { color: rgba(255,255,255,0.45); font-size: 11px; }
+  .start-footer {
+    margin-top: auto; display: flex; align-items: center; justify-content: space-between;
+    padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .user-info { display: flex; align-items: center; gap: 10px; color: white; font-size: 13px; cursor: pointer; }
+  .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,#0078d4,#60cdff); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .power-btn { color: rgba(255,255,255,0.7); cursor: pointer; padding: 6px; border-radius: 6px; }
+  .power-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+  /* WINDOWS */
+  .win {
+    position: absolute;
+    background: rgba(32,32,42,0.97);
+    backdrop-filter: blur(30px);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    min-width: 320px; min-height: 220px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .win-titlebar {
+    height: 34px; display: flex; align-items: center;
+    padding: 0 12px;
+    cursor: grab;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.04);
+  }
+  .win-titlebar:active { cursor: grabbing; }
+  .win-title { color: rgba(255,255,255,0.85); font-size: 12.5px; flex: 1; }
+  .win-controls { display: flex; gap: 0; }
+  .win-ctrl {
+    width: 46px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.12s;
+    color: rgba(255,255,255,0.8); font-size: 12px;
+  }
+  .win-ctrl:hover { background: rgba(255,255,255,0.1); }
+  .win-ctrl.close:hover { background: #c42b1c; color: white; }
+  .win-body { flex: 1; overflow: auto; padding: 0; }
+
+  /* RESIZE HANDLES */
+  .resize-handle {
+    position: absolute; z-index: 10;
+  }
+  .resize-n  { top:-4px; left:8px; right:8px; height:8px; cursor:n-resize; }
+  .resize-s  { bottom:-4px; left:8px; right:8px; height:8px; cursor:s-resize; }
+  .resize-w  { left:-4px; top:8px; bottom:8px; width:8px; cursor:w-resize; }
+  .resize-e  { right:-4px; top:8px; bottom:8px; width:8px; cursor:e-resize; }
+  .resize-nw { top:-4px; left:-4px; width:12px; height:12px; cursor:nw-resize; }
+  .resize-ne { top:-4px; right:-4px; width:12px; height:12px; cursor:ne-resize; }
+  .resize-sw { bottom:-4px; left:-4px; width:12px; height:12px; cursor:sw-resize; }
+  .resize-se { bottom:-4px; right:-4px; width:12px; height:12px; cursor:se-resize; }
+
+  /* SNAP PREVIEW */
+  #snap-preview {
+    position: absolute; z-index: 9990;
+    background: rgba(96,205,255,0.18);
+    border: 2px solid rgba(96,205,255,0.5);
+    border-radius: 8px;
+    pointer-events: none;
+    display: none;
+    transition: all 0.12s;
+  }
+
+  /* CONTEXT MENU */
+  #ctx-menu {
+    position: absolute; z-index: 99999;
+    background: rgba(32,32,48,0.97);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    display: none;
+    min-width: 180px;
+  }
+  #ctx-menu.open { display: block; }
+  .ctx-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px; color: white; font-size: 13px;
+    border-radius: 5px; cursor: pointer;
+  }
+  .ctx-item:hover { background: rgba(255,255,255,0.1); }
+  .ctx-sep { height: 1px; background: rgba(255,255,255,0.08); margin: 4px 8px; }
+
+  /* NOTIFICATION */
+  #notif {
+    position: absolute; bottom: 56px; right: 8px;
+    background: rgba(32,32,48,0.97);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: white; font-size: 13px;
+    z-index: 9997;
+    display: none;
+    min-width: 240px;
+  }
+  #notif.show { display: block; animation: fadeUp 0.2s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* APPS */
+  .file-explorer { color: white; height: 100%; display: flex; flex-direction: column; }
+  .fe-toolbar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .fe-btn { padding: 4px 10px; border-radius: 5px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); font-size: 12px; cursor: pointer; }
+  .fe-btn:hover { background: rgba(255,255,255,0.14); }
+  .fe-addr { flex: 1; background: rgba(255,255,255,0.07); border-radius: 5px; padding: 4px 10px; font-size: 12px; color: rgba(255,255,255,0.7); }
+  .fe-body { display: flex; flex: 1; overflow: hidden; }
+  .fe-sidebar { width: 140px; padding: 8px; border-right: 1px solid rgba(255,255,255,0.07); font-size: 12px; }
+  .fe-sidebar-item { padding: 5px 8px; border-radius: 5px; cursor: pointer; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 6px; }
+  .fe-sidebar-item:hover { background: rgba(255,255,255,0.08); color: white; }
+  .fe-grid { flex: 1; padding: 12px; display: grid; grid-template-columns: repeat(auto-fill,80px); gap: 8px; align-content: start; overflow-y: auto; }
+  .fe-file { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; border-radius: 6px; cursor: pointer; }
+  .fe-file:hover { background: rgba(255,255,255,0.1); }
+  .fe-file .icon { font-size: 28px; }
+  .fe-file .name { font-size: 11px; color: rgba(255,255,255,0.8); text-align: center; word-break: break-word; }
+
+  .notepad { color: white; height: 100%; display: flex; flex-direction: column; }
+  .np-menu { display: flex; gap: 0; padding: 2px 6px; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 12px; }
+  .np-menu-item { padding: 4px 10px; cursor: pointer; border-radius: 4px; color: rgba(255,255,255,0.75); }
+  .np-menu-item:hover { background: rgba(255,255,255,0.1); color: white; }
+  .np-editor { flex: 1; background: #1a1a26; color: #e0e0e0; font-family: 'Consolas', monospace; font-size: 14px; padding: 12px; border: none; outline: none; resize: none; line-height: 1.5; }
+
+  .settings-app { color: white; height: 100%; display: flex; }
+  .settings-sidebar { width: 200px; padding: 12px 8px; border-right: 1px solid rgba(255,255,255,0.07); }
+  .settings-sidebar h3 { font-size: 18px; font-weight: 600; padding: 8px 10px 16px; }
+  .settings-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: rgba(255,255,255,0.75); }
+  .settings-item:hover, .settings-item.active { background: rgba(255,255,255,0.1); color: white; }
+  .settings-content { flex: 1; padding: 20px; overflow-y: auto; }
+  .settings-content h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+  .settings-card { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .toggle { width: 40px; height: 22px; background: rgba(255,255,255,0.2); border-radius: 11px; position: relative; cursor: pointer; transition: background 0.2s; }
+  .toggle.on { background: #0078d4; }
+  .toggle::after { content:''; position:absolute; left:2px; top:2px; width:18px; height:18px; border-radius:50%; background:white; transition: transform 0.2s; }
+  .toggle.on::after { transform: translateX(18px); }
+
+  /* MAXIMIZE */
+  .win.maximized { border-radius: 0 !important; }
+
+  /* TASKBAR OPEN APP */
+  .tb-btn.active::after {
+    content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+    width: 16px; height: 3px; border-radius: 2px; background: #60cdff;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="desktop">
+
+  <!-- SNAP PREVIEW -->
+  <div id="snap-preview"></div>
+
+  <!-- DESKTOP ICONS (top-left, horizontal) -->
+  <div id="desktop-icons">
+    <div class="desk-icon" ondblclick="openApp('explorer')" onclick="selectIcon(this)" title="This PC">
+      <div class="desk-icon-img">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <rect x="4" y="10" width="36" height="24" rx="3" fill="#1a73e8"/>
+          <rect x="4" y="10" width="36" height="24" rx="3" fill="url(#monitor-grad)"/>
+          <rect x="8" y="13" width="28" height="17" rx="1" fill="#0d1117"/>
+          <rect x="14" y="34" width="16" height="3" rx="1" fill="#2d6bb5"/>
+          <rect x="10" y="37" width="24" height="2" rx="1" fill="#2d6bb5"/>
+          <!-- Screen content -->
+          <rect x="9" y="14" width="26" height="15" rx="1" fill="#0f1f3d"/>
+          <rect x="11" y="16" width="10" height="7" rx="1" fill="#1565c0"/>
+          <rect x="23" y="16" width="10" height="3" rx="1" fill="#1565c0"/>
+          <rect x="23" y="21" width="7" height="2" rx="1" fill="#1565c0"/>
+          <defs><linearGradient id="monitor-grad" x1="4" y1="10" x2="40" y2="34" gradientUnits="userSpaceOnUse"><stop stop-color="#2196f3"/><stop offset="1" stop-color="#0d47a1"/></linearGradient></defs>
+        </svg>
+      </div>
+      <div class="desk-icon-label">This PC</div>
+    </div>
+
+    <div class="desk-icon" ondblclick="openApp('calculator')" onclick="selectIcon(this)" title="Calculator">
+      <div class="desk-icon-img">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <rect x="6" y="4" width="32" height="36" rx="4" fill="#1a1a2e"/>
+          <rect x="6" y="4" width="32" height="36" rx="4" fill="url(#calc-grad)"/>
+          <rect x="10" y="8" width="24" height="10" rx="2" fill="#0078d4"/>
+          <text x="32" y="20" text-anchor="end" fill="white" font-size="9" font-family="Segoe UI">0</text>
+          <circle cx="14" cy="26" r="2.5" fill="white"/>
+          <circle cx="22" cy="26" r="2.5" fill="white"/>
+          <circle cx="30" cy="26" r="2.5" fill="#ff6b6b"/>
+          <circle cx="14" cy="33" r="2.5" fill="white"/>
+          <circle cx="22" cy="33" r="2.5" fill="white"/>
+          <rect x="27.5" y="30.5" width="5" height="5" rx="1" fill="#0078d4"/>
+          <defs><linearGradient id="calc-grad" x1="6" y1="4" x2="38" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#2d2d3d"/><stop offset="1" stop-color="#111"/></linearGradient></defs>
+        </svg>
+      </div>
+      <div class="desk-icon-label">Calculator</div>
+    </div>
+
+    <div class="desk-icon" ondblclick="openApp('notepad')" onclick="selectIcon(this)" title="Notepad">
+      <div class="desk-icon-img">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <rect x="7" y="4" width="26" height="33" rx="2" fill="#fff" opacity="0.95"/>
+          <rect x="7" y="4" width="26" height="33" rx="2" fill="url(#np-grad)"/>
+          <rect x="28" y="4" width="9" height="33" rx="2" fill="#ffd54f"/>
+          <rect x="28" y="4" width="9" height="33" rx="2" fill="url(#np-spiral)"/>
+          <!-- Lines -->
+          <rect x="11" y="11" width="15" height="1.5" rx="1" fill="rgba(0,0,0,0.2)"/>
+          <rect x="11" y="15" width="15" height="1.5" rx="1" fill="rgba(0,0,0,0.2)"/>
+          <rect x="11" y="19" width="12" height="1.5" rx="1" fill="rgba(0,0,0,0.2)"/>
+          <rect x="11" y="23" width="15" height="1.5" rx="1" fill="rgba(0,0,0,0.2)"/>
+          <rect x="11" y="27" width="9" height="1.5" rx="1" fill="rgba(0,0,0,0.2)"/>
+          <!-- Pencil -->
+          <rect x="26" y="28" width="14" height="5" rx="1" fill="#ffc107" transform="rotate(-45 26 28)"/>
+          <defs>
+            <linearGradient id="np-grad" x1="7" y1="4" x2="33" y2="37" gradientUnits="userSpaceOnUse"><stop stop-color="#fffde7"/><stop offset="1" stop-color="#fff9c4"/></linearGradient>
+            <linearGradient id="np-spiral" x1="28" y1="4" x2="37" y2="37" gradientUnits="userSpaceOnUse"><stop stop-color="#ffca28"/><stop offset="1" stop-color="#ff8f00"/></linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="desk-icon-label">Notepad</div>
+    </div>
+
+    <div class="desk-icon" ondblclick="openRecycleBin()" onclick="selectIcon(this)" title="Recycle Bin">
+      <div class="desk-icon-img">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <!-- Bin body -->
+          <path d="M10 16h24l-2.5 22a2 2 0 0 1-2 1.8H14.5a2 2 0 0 1-2-1.8L10 16z" fill="url(#bin-grad)"/>
+          <!-- Lid -->
+          <rect x="8" y="12" width="28" height="5" rx="2" fill="url(#lid-grad)"/>
+          <!-- Handle -->
+          <rect x="18" y="8" width="8" height="5" rx="2" fill="url(#lid-grad)"/>
+          <!-- Lines on bin -->
+          <line x1="17" y1="20" x2="16" y2="34" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="22" y1="20" x2="22" y2="34" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="27" y1="20" x2="28" y2="34" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="bin-grad" x1="10" y1="16" x2="34" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#90caf9"/><stop offset="1" stop-color="#1565c0"/></linearGradient>
+            <linearGradient id="lid-grad" x1="8" y1="12" x2="36" y2="17" gradientUnits="userSpaceOnUse"><stop stop-color="#bbdefb"/><stop offset="1" stop-color="#42a5f5"/></linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="desk-icon-label">Recycle Bin</div>
+    </div>
+  </div>
+
+  <!-- CONTEXT MENU -->
+  <div id="ctx-menu">
+    <div class="ctx-item" onclick="changeWallpaper()">🖼️ Change Wallpaper</div>
+    <div class="ctx-item" onclick="openApp('settings')">⚙️ Display Settings</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" onclick="openApp('notepad')">📝 New Text Document</div>
+    <div class="ctx-item">🔄 Refresh</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item">📋 Paste</div>
+    <div class="ctx-item">⚡ Open in Terminal</div>
+  </div>
+
+  <!-- NOTIFICATION PANEL -->
+  <div id="notif">
+    <div style="font-weight:600;margin-bottom:10px;display:flex;justify-content:space-between">
+      <span>Notifications</span><span style="color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer" onclick="closeNotif()">✕</span>
+    </div>
+    <div style="color:rgba(255,255,255,0.6);font-size:13px">No new notifications</div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <div style="background:rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer">🔕 Focus Assist</div>
+      <div style="background:rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer">🌙 Night Mode</div>
+      <div style="background:rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer">📶 WiFi</div>
+      <div style="background:rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer">🔊 Volume</div>
+    </div>
+  </div>
+
+  <!-- START MENU -->
+  <div id="start-menu">
+    <div class="start-search">
+      <svg fill="rgba(255,255,255,0.5)" viewBox="0 0 24 24" width="16" height="16"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="rgba(255,255,255,0.5)" stroke-width="2" fill="none"/></svg>
+      <input type="text" placeholder="Type here to search">
+    </div>
+    <div class="pinned-label">Pinned</div>
+    <div class="pinned-grid">
+      <div class="pinned-app" onclick="openApp('browser');closeStart()">
+        <div class="icon" style="background:linear-gradient(135deg,#0078d4,#1ed0ff)">🌐</div>
+        <div class="name">Edge</div>
+      </div>
+      <div class="pinned-app" onclick="openApp('explorer');closeStart()">
+        <div class="icon" style="background:linear-gradient(135deg,#f5c000,#ffe166)">📁</div>
+        <div class="name">Explorer</div>
+      </div>
+      <div class="pinned-app" onclick="openApp('settings');closeStart()">
+        <div class="icon" style="background:linear-gradient(135deg,#555,#888)">⚙️</div>
+        <div class="name">Settings</div>
+      </div>
+      <div class="pinned-app" onclick="openApp('notepad');closeStart()">
+        <div class="icon" style="background:linear-gradient(135deg,#1a73e8,#4fc3f7)">📝</div>
+        <div class="name">Notepad</div>
+      </div>
+      <div class="pinned-app" onclick="openApp('calculator');closeStart()">
+        <div class="icon" style="background:linear-gradient(135deg,#333,#666)">🧮</div>
+        <div class="name">Calculator</div>
+      </div>
+      <div class="pinned-app">
+        <div class="icon" style="background:linear-gradient(135deg,#107c10,#55aa55)">🎮</div>
+        <div class="name">Xbox</div>
+      </div>
+    </div>
+    <div class="recommended-label">Recommended</div>
+    <div class="recommended-grid">
+      <div class="rec-item"><span class="icon">📄</span><div class="info"><div class="name">Document.txt</div><div class="time">2 minutes ago</div></div></div>
+      <div class="rec-item"><span class="icon">🖼️</span><div class="info"><div class="name">Screenshot.png</div><div class="time">1 hour ago</div></div></div>
+      <div class="rec-item"><span class="icon">📊</span><div class="info"><div class="name">Report.xlsx</div><div class="time">Yesterday</div></div></div>
+      <div class="rec-item"><span class="icon">🎵</span><div class="info"><div class="name">Playlist.mp3</div><div class="time">2 days ago</div></div></div>
+    </div>
+    <div class="start-footer">
+      <div class="user-info"><div class="user-avatar">👤</div><span>Windows User</span></div>
+      <div class="power-btn" onclick="powerMenu()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKBAR -->
+  <div id="taskbar">
+    <!-- System tray left -->
+    <div id="taskbar-left" style="position:absolute;left:12px;display:flex;align-items:center;gap:4px">
+      <div class="tb-btn" title="Search" onclick="openApp('notepad')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <div class="tb-btn" title="Task View">
+        <svg viewBox="0 0 24 24" fill="rgba(255,255,255,0.8)"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+    </div>
+
+    <!-- Center icons -->
+    <div class="taskbar-icons">
+      <!-- Start -->
+      <div class="tb-btn" id="start-btn" title="Start" onclick="toggleStart()">
+        <svg viewBox="0 0 24 24" width="22" height="22">
+          <rect x="2" y="2" width="9" height="9" rx="1" fill="#00adef"/>
+          <rect x="13" y="2" width="9" height="9" rx="1" fill="#00adef"/>
+          <rect x="2" y="13" width="9" height="9" rx="1" fill="#00adef"/>
+          <rect x="13" y="13" width="9" height="9" rx="1" fill="#00adef"/>
+        </svg>
+      </div>
+      <div class="tb-btn" id="tb-browser" title="Edge" onclick="openApp('browser')">
+        <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10" fill="#0078d4"/><path d="M6 12c0-3.3 2.7-6 6-6 2 0 3.8.9 5 2.4H12c-2 0-3.7 1.3-4.3 3H6z" fill="white"/><path d="M12 18c-2.5 0-4.6-1.5-5.6-3.6H16c1.1 0 2-.9 2-2H9c.6-1.7 2.2-3 4-3h.4C15.3 8.1 17 10 17 12c0 3.3-2.2 6-5 6z" fill="white" opacity=".8"/></svg>
+      </div>
+      <div class="tb-btn" id="tb-explorer" title="File Explorer" onclick="openApp('explorer')">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 6c0-1.1.9-2 2-2h4l2 2h8c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V6z" fill="#f5c000"/><path d="M3 10h18v8c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2v-8z" fill="#ffe066"/></svg>
+      </div>
+      <div class="tb-btn" id="tb-settings" title="Settings" onclick="openApp('settings')">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </div>
+      <div class="tb-btn" id="tb-notepad" title="Notepad" onclick="openApp('notepad')">
+        <svg viewBox="0 0 24 24" width="22" height="22"><rect x="4" y="2" width="16" height="20" rx="2" fill="#1a73e8"/><line x1="8" y1="8" x2="16" y2="8" stroke="white" stroke-width="1.5"/><line x1="8" y1="12" x2="16" y2="12" stroke="white" stroke-width="1.5"/><line x1="8" y1="16" x2="12" y2="16" stroke="white" stroke-width="1.5"/></svg>
+      </div>
+      <div class="tb-btn" id="tb-calculator" title="Calculator" onclick="openApp('calculator')">
+        <svg viewBox="0 0 24 24" width="22" height="22"><rect x="4" y="2" width="16" height="20" rx="2" fill="#555"/><rect x="7" y="5" width="10" height="4" rx="1" fill="#1a73e8"/><circle cx="8" cy="13" r="1.2" fill="white"/><circle cx="12" cy="13" r="1.2" fill="white"/><circle cx="16" cy="13" r="1.2" fill="white"/><circle cx="8" cy="17" r="1.2" fill="white"/><circle cx="12" cy="17" r="1.2" fill="white"/><circle cx="16" cy="13" r="1.2" fill="#f66"/></svg>
+      </div>
+    </div>
+
+    <!-- System tray right -->
+    <div id="taskbar-right" style="position:absolute;right:0;display:flex;align-items:center;gap:2px">
+      <div class="tb-btn" style="font-size:11px;color:rgba(255,255,255,0.7)">🔊</div>
+      <div class="tb-btn" style="font-size:11px;color:rgba(255,255,255,0.7)">📶</div>
+      <div class="tb-btn" style="font-size:11px;color:rgba(255,255,255,0.7)" onclick="toggleNotif()">🔔</div>
+      <div id="clock-area" onclick="toggleNotif()">
+        <div id="clock-time">12:00</div>
+        <div id="clock-date">3/27/2026</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =================== DESKTOP ICONS ===================
+function selectIcon(el) {
+  document.querySelectorAll('.desk-icon').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+// Deselect icons on desktop click
+document.getElementById('desktop').addEventListener('click', e => {
+  if (!e.target.closest('.desk-icon') && !e.target.closest('.win') && !e.target.closest('#taskbar') && !e.target.closest('#start-menu') && !e.target.closest('#ctx-menu')) {
+    document.querySelectorAll('.desk-icon').forEach(i => i.classList.remove('selected'));
+  }
+});
+
+// Recycle Bin
+const recycleBinItems = [];
+function openRecycleBin() {
+  const id = 'recyclebin';
+  if (openWindows[id]) { bringToFront(openWindows[id]); return; }
+  const desktop = document.getElementById('desktop');
+  const dw = desktop.clientWidth, dh = desktop.clientHeight - 48;
+  const w = Math.min(680, dw - 40), h = Math.min(440, dh - 40);
+  const x = Math.random() * (dw - w - 60) + 20, y = Math.random() * (dh - h - 60) + 20;
+  const win = document.createElement('div');
+  win.className = 'win'; win.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;`; win.dataset.id = id;
+  win.innerHTML = `
+    ${['n','s','e','w','ne','nw','se','sw'].map(d=>`<div class="resize-handle resize-${d}" data-dir="${d}"></div>`).join('')}
+    <div class="win-titlebar">
+      <div class="win-title">🗑️ Recycle Bin</div>
+      <div class="win-controls">
+        <div class="win-ctrl minimize" onclick="minimizeWin('${id}')">─</div>
+        <div class="win-ctrl maximize" onclick="maximizeWin('${id}')">□</div>
+        <div class="win-ctrl close" onclick="closeWin('${id}')">✕</div>
+      </div>
+    </div>
+    <div class="win-body">
+      <div class="file-explorer">
+        <div class="fe-toolbar">
+          <div class="fe-btn" onclick="recycleBinItems.length=0;this.closest('.win-body').querySelector('.fe-grid').innerHTML='<div style=\\'color:rgba(255,255,255,0.4);font-size:13px;padding:20px\\'>Recycle Bin is empty</div>'">🗑️ Empty Recycle Bin</div>
+          <div class="fe-addr">🗑️ Recycle Bin</div>
+        </div>
+        <div class="fe-body">
+          <div class="fe-sidebar">
+            <div class="fe-sidebar-item">🗑️ Recycle Bin</div>
+          </div>
+          <div class="fe-grid" style="align-content:center;justify-content:center">
+            <div style="color:rgba(255,255,255,0.4);font-size:13px;text-align:center;grid-column:1/-1">Recycle Bin is empty</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  desktop.appendChild(win);
+  openWindows[id] = win;
+  bringToFront(win);
+  makeDraggable(win, id);
+  makeResizable(win);
+}
+
+// =================== CLOCK ===================
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours().toString().padStart(2,'0');
+  const m = now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('clock-time').textContent = `${h}:${m}`;
+  const d = now.toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'});
+  document.getElementById('clock-date').textContent = d;
+}
+updateClock(); setInterval(updateClock, 10000);
+
+// =================== START MENU ===================
+function toggleStart() {
+  const sm = document.getElementById('start-menu');
+  sm.classList.toggle('open');
+}
+function closeStart() { document.getElementById('start-menu').classList.remove('open'); }
+
+// =================== NOTIFICATIONS ===================
+function toggleNotif() {
+  const n = document.getElementById('notif');
+  n.classList.toggle('show');
+  closeStart();
+}
+function closeNotif() { document.getElementById('notif').classList.remove('show'); }
+
+// =================== WALLPAPERS ===================
+const wallpapers = [
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Windows_11_Default_Desktop.png/1280px-Windows_11_Default_Desktop.png',
+  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1920&q=80',
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80',
+  'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=1920&q=80',
+  'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=1920&q=80',
+];
+let wpIdx = 0;
+function changeWallpaper() {
+  wpIdx = (wpIdx + 1) % wallpapers.length;
+  document.getElementById('desktop').style.backgroundImage = `url('${wallpapers[wpIdx]}')`;
+}
+
+// =================== CONTEXT MENU ===================
+const ctxMenu = document.getElementById('ctx-menu');
+document.getElementById('desktop').addEventListener('contextmenu', e => {
+  if (e.target.closest('.win') || e.target.closest('#taskbar') || e.target.closest('#start-menu')) return;
+  e.preventDefault();
+  ctxMenu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
+  ctxMenu.style.top = Math.min(e.clientY, window.innerHeight - 200) + 'px';
+  ctxMenu.classList.add('open');
+});
+document.addEventListener('click', e => {
+  if (!ctxMenu.contains(e.target)) ctxMenu.classList.remove('open');
+  if (!document.getElementById('start-menu').contains(e.target) && !document.getElementById('start-btn').contains(e.target)) closeStart();
+  if (!document.getElementById('notif').contains(e.target)) closeNotif();
+});
+
+// =================== WINDOW MANAGER ===================
+let zBase = 100;
+const openWindows = {};
+
+const feFS = {
+  root: {
+    type:'folder', label:'This PC', path:'This PC',
+    children: {
+      'Documents': {type:'folder', label:'Documents', icon:'📄',
+        children:{
+          'Work': {type:'folder',icon:'📁',children:{
+            'report.pdf':{type:'file',icon:'📕'},
+            'budget.xlsx':{type:'file',icon:'📊'},
+            'presentation.pptx':{type:'file',icon:'📑'},
+            'notes.txt':{type:'file',icon:'📄'},
+          }},
+          'Personal': {type:'folder',icon:'📁',children:{
+            'diary.txt':{type:'file',icon:'📄'},
+            'resume.pdf':{type:'file',icon:'📕'},
+            'ideas.md':{type:'file',icon:'📝'},
+          }},
+          'readme.txt':{type:'file',icon:'📄'},
+          'notes.md':{type:'file',icon:'📝'},
+          'contract.pdf':{type:'file',icon:'📕'},
+        }
+      },
+      'Downloads': {type:'folder', label:'Downloads', icon:'📥',
+        children:{
+          'Setup': {type:'folder',icon:'📁',children:{
+            'chrome_installer.exe':{type:'file',icon:'⚙️'},
+            'vlc_setup.exe':{type:'file',icon:'⚙️'},
+            'python_3.12.exe':{type:'file',icon:'⚙️'},
+          }},
+          'node_modules.zip':{type:'file',icon:'🗜️'},
+          'wallpaper.jpg':{type:'file',icon:'🖼️'},
+          'tutorial.mp4':{type:'file',icon:'🎬'},
+          'music_pack.zip':{type:'file',icon:'🗜️'},
+          'ebook.pdf':{type:'file',icon:'📕'},
+          'game_update.exe':{type:'file',icon:'⚙️'},
+        }
+      },
+      'Pictures': {type:'folder', label:'Pictures', icon:'🖼️',
+        children:{
+          'Wallpapers': {type:'folder',icon:'📁',children:{
+            'mountains.jpg':{type:'file',icon:'🖼️'},
+            'city_night.png':{type:'file',icon:'🖼️'},
+            'abstract.jpg':{type:'file',icon:'🖼️'},
+          }},
+          'Screenshots': {type:'folder',icon:'📁',children:{
+            'screenshot_001.png':{type:'file',icon:'🖼️'},
+            'screenshot_002.png':{type:'file',icon:'🖼️'},
+            'screenshot_003.png':{type:'file',icon:'🖼️'},
+          }},
+          'vacation.jpg':{type:'file',icon:'🖼️'},
+          'profile_photo.png':{type:'file',icon:'🖼️'},
+          'birthday.jpg':{type:'file',icon:'🖼️'},
+          'logo_design.png':{type:'file',icon:'🖼️'},
+        }
+      }
+    }
+  }
+};
+
+const appDefs = {
+  browser: {
+    title: '🌐 Microsoft Edge',
+    width: 900, height: 600,
+    content: () => `<iframe src="https://www.bing.com" style="width:100%;height:100%;border:none;background:white"></iframe>`
+  },
+  explorer: {
+    title: '📁 File Explorer',
+    width: 900, height: 600,
+    content: () => `<div class="file-explorer">
+      <div class="fe-toolbar">
+        <div class="fe-btn" id="fe-back" onclick="feNavigate('back')" title="Back">←</div>
+        <div class="fe-btn" id="fe-fwd" onclick="feNavigate('fwd')" title="Forward">→</div>
+        <div class="fe-btn" onclick="feNavigate('up')" title="Up">⤴</div>
+        <div class="fe-addr" id="fe-addr">💻 This PC</div>
+      </div>
+      <div class="fe-body">
+        <div class="fe-sidebar">
+          <div class="fe-sidebar-item" onclick="feOpen('Documents')">📄 Documents</div>
+          <div class="fe-sidebar-item" onclick="feOpen('Downloads')">📥 Downloads</div>
+          <div class="fe-sidebar-item" onclick="feOpen('Pictures')">🖼️ Pictures</div>
+        </div>
+        <div class="fe-grid" id="fe-grid" style="align-content:start"></div>
+      </div>
+    </div>`
+  },
+
+
+
+  notepad: {
+    title: '📝 Notepad',
+    width: 600, height: 420,
+    content: () => `<div class="notepad">
+      <div class="np-menu">
+        <div class="np-menu-item">File</div>
+        <div class="np-menu-item">Edit</div>
+        <div class="np-menu-item">Format</div>
+        <div class="np-menu-item">View</div>
+        <div class="np-menu-item">Help</div>
+      </div>
+      <textarea class="np-editor" placeholder="Start typing..."></textarea>
+    </div>`
+  },
+  settings: {
+    title: '⚙️ Settings',
+    width: 760, height: 520,
+    content: () => `<div class="settings-app">
+      <div class="settings-sidebar">
+        <h3>Settings</h3>
+        <div class="settings-item active">🏠 System</div>
+        <div class="settings-item">🔵 Bluetooth</div>
+        <div class="settings-item">🌐 Network</div>
+        <div class="settings-item">🎨 Personalization</div>
+        <div class="settings-item">📱 Apps</div>
+        <div class="settings-item">👤 Accounts</div>
+        <div class="settings-item">🕐 Time & Language</div>
+        <div class="settings-item">🎮 Gaming</div>
+        <div class="settings-item">♿ Accessibility</div>
+        <div class="settings-item">🔒 Privacy</div>
+        <div class="settings-item">🔄 Windows Update</div>
+      </div>
+      <div class="settings-content">
+        <h2>System</h2>
+        <div class="settings-card"><span>Dark Mode</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-card"><span>Night Light</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-card"><span>Notifications</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-card"><span>Focus Assist</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-card"><span>Battery Saver</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-card" style="flex-direction:column;align-items:flex-start;gap:10px">
+          <span>Display Scale</span>
+          <input type="range" min="100" max="200" value="125" style="width:100%;accent-color:#0078d4">
+        </div>
+      </div>
+    </div>`
+  },
+  calculator: {
+    title: '🧮 Calculator',
+    width: 320, height: 500,
+    content: () => {
+      return `<div style="color:white;height:100%;display:flex;flex-direction:column;background:#202020">
+        <div id="calc-display" style="padding:20px 20px 8px;text-align:right">
+          <div style="color:rgba(255,255,255,0.5);font-size:14px;min-height:20px" id="calc-expr"></div>
+          <div style="font-size:48px;font-weight:200;overflow:hidden;text-overflow:ellipsis" id="calc-result">0</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,0.05);flex:1">
+          ${[
+            ['%','CE','C','⌫'],
+            ['1/x','x²','√x','÷'],
+            ['7','8','9','×'],
+            ['4','5','6','−'],
+            ['1','2','3','+'],
+            ['+/−','0','.','=']
+          ].map(row=>row.map((b,i,arr)=>{
+            const isOp = ['÷','×','−','+','='].includes(b);
+            const isFn = ['%','CE','C','⌫','1/x','x²','√x'].includes(b);
+            const bg = b==='=' ? '#0078d4' : isFn ? '#2d2d2d' : '#1a1a1a';
+            return `<button onclick="calcPress('${b}')" style="background:${bg};color:white;border:none;font-size:18px;font-weight:300;cursor:pointer;padding:0;transition:background 0.1s" onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter=''">${b}</button>`;
+          }).join('')).join('')}
+        </div>
+        <script>
+          let calcVal='0',calcExpr='',calcOp=null,calcNew=true;
+          function calcPress(b){
+            const r=document.getElementById('calc-result');
+            const e=document.getElementById('calc-expr');
+            if('0123456789.'.includes(b)){
+              if(calcNew){calcVal=b==='.'?'0.':b;calcNew=false;}
+              else{if(b==='.'&&calcVal.includes('.'))return;calcVal=calcVal==='0'&&b!=='.'?b:calcVal+b;}
+            } else if(b==='C'){calcVal='0';calcExpr='';calcOp=null;calcNew=true;}
+            else if(b==='CE'){calcVal='0';calcNew=true;}
+            else if(b==='⌫'){calcVal=calcVal.length>1?calcVal.slice(0,-1):'0';}
+            else if(b==='+/−'){calcVal=String(-parseFloat(calcVal));}
+            else if(b==='%'){calcVal=String(parseFloat(calcVal)/100);}
+            else if(b==='x²'){calcVal=String(Math.pow(parseFloat(calcVal),2));calcNew=true;}
+            else if(b==='√x'){calcVal=String(Math.sqrt(parseFloat(calcVal)));calcNew=true;}
+            else if(b==='1/x'){calcVal=String(1/parseFloat(calcVal));calcNew=true;}
+            else if(['÷','×','−','+'].includes(b)){
+              if(calcOp&&!calcNew){
+                const a=parseFloat(calcExpr.split(' ')[0]),cv=parseFloat(calcVal);
+                const res={'÷':a/cv,'×':a*cv,'−':a-cv,'+':(a+cv)}[calcOp];
+                calcVal=String(parseFloat(res.toFixed(10)));
+              }
+              calcExpr=calcVal+' '+b;calcOp=b;calcNew=true;
+            } else if(b==='='){
+              if(calcOp){
+                const a=parseFloat(calcExpr.split(' ')[0]),cv=parseFloat(calcVal);
+                const res={'÷':a/cv,'×':a*cv,'−':a-cv,'+':(a+cv)}[calcOp];
+                calcExpr=calcExpr+' '+calcVal+' =';
+                calcVal=String(parseFloat(res.toFixed(10)));
+                calcOp=null;calcNew=true;
+              }
+            }
+            r.textContent=calcVal.length>12?parseFloat(calcVal).toExponential(4):calcVal;
+            e.textContent=calcExpr;
+          }
+        <\/script>
+      </div>`;
+    }
+  }
+};
+
+let feCurrent = 'root';
+let feHistory = ['root'];
+let feHistIdx = 0;
+
+function feGetNode(path) {
+  if (path === 'root') return feFS.root;
+  const parts = path.split('/');
+  let node = feFS.root;
+  for (const p of parts) {
+    if (node.children && node.children[p]) node = node.children[p];
+    else return null;
+  }
+  return node;
+}
+
+function feOpen(pathOrName) {
+  let path = pathOrName;
+  if (path === 'This PC') path = 'root';
+  if (['Documents','Downloads','Pictures'].includes(pathOrName)) path = pathOrName;
+  const node = feGetNode(path);
+  if (!node) return;
+  if (node.type === 'file') return;
+  feCurrent = path;
+  feHistory = feHistory.slice(0, feHistIdx + 1);
+  feHistory.push(path);
+  feHistIdx = feHistory.length - 1;
+  feRender();
+}
+
+function feNavigate(dir) {
+  if (dir === 'back' && feHistIdx > 0) { feHistIdx--; feCurrent = feHistory[feHistIdx]; feRender(); }
+  else if (dir === 'fwd' && feHistIdx < feHistory.length - 1) { feHistIdx++; feCurrent = feHistory[feHistIdx]; feRender(); }
+  else if (dir === 'up') {
+    if (feCurrent === 'root') return;
+    const parts = feCurrent.split('/');
+    parts.pop();
+    const up = parts.length === 0 ? 'root' : parts.join('/');
+    feOpen(up);
+  }
+}
+
+function feRender() {
+  const node = feGetNode(feCurrent);
+  if (!node || !node.children) return;
+  const grid = document.getElementById('fe-grid');
+  const addr = document.getElementById('fe-addr');
+  const backBtn = document.getElementById('fe-back');
+  const fwdBtn = document.getElementById('fe-fwd');
+  if (!grid || !addr || !backBtn || !fwdBtn) return;
+
+  if (feCurrent === 'root') addr.textContent = '💻 This PC';
+  else { const parts = feCurrent.split('/'); addr.textContent = '💻 This PC › ' + parts.join(' › '); }
+
+  backBtn.style.opacity = feHistIdx > 0 ? '1' : '0.4';
+  backBtn.style.cursor = feHistIdx > 0 ? 'pointer' : 'default';
+  fwdBtn.style.opacity = feHistIdx < feHistory.length - 1 ? '1' : '0.4';
+  fwdBtn.style.cursor = feHistIdx < feHistory.length - 1 ? 'pointer' : 'default';
+
+  const entries = Object.entries(node.children);
+  const folders = entries.filter(([,v]) => v.type === 'folder');
+  const files = entries.filter(([,v]) => v.type === 'file');
+  const sorted = [...folders, ...files];
+
+  grid.innerHTML = sorted.map(([name, item]) => {
+    const isFolder = item.type === 'folder';
+    const childPath = feCurrent === 'root' ? name : feCurrent + '/' + name;
+    const dblHandler = isFolder ? `feOpen('${childPath}')` : '';
+    return `<div class="fe-file" ondblclick="${dblHandler}" title="${name}">
+      <div class="icon">${item.icon || (isFolder ? '📁' : '📄')}</div>
+      <div class="name">${name}</div>
+    </div>`;
+  }).join('');
+}
+
+function openApp(id) {
+  if (openWindows[id]) {
+    bringToFront(openWindows[id]);
+    return;
+  }
+  const def = appDefs[id];
+  if (!def) return;
+
+  const desktop = document.getElementById('desktop');
+  const dw = desktop.clientWidth, dh = desktop.clientHeight - 48;
+  const w = Math.min(def.width, dw - 40);
+  const h = Math.min(def.height, dh - 40);
+  const x = Math.random() * (dw - w - 60) + 20;
+  const y = Math.random() * (dh - h - 60) + 20;
+
+  const win = document.createElement('div');
+  win.className = 'win';
+  win.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
+  win.dataset.id = id;
+
+  win.innerHTML = `
+    ${['n','s','e','w','ne','nw','se','sw'].map(d=>`<div class="resize-handle resize-${d}" data-dir="${d}"></div>`).join('')}
+    <div class="win-titlebar">
+      <div class="win-title">${def.title}</div>
+      <div class="win-controls">
+        <div class="win-ctrl minimize" title="Minimize" onclick="minimizeWin('${id}')">─</div>
+        <div class="win-ctrl maximize" title="Maximize" onclick="maximizeWin('${id}')">□</div>
+        <div class="win-ctrl close" title="Close" onclick="closeWin('${id}')">✕</div>
+      </div>
+    </div>
+    <div class="win-body">${def.content()}</div>
+  `;
+
+  desktop.appendChild(win);
+  openWindows[id] = win;
+  bringToFront(win);
+  makeDraggable(win, id);
+  makeResizable(win);
+  updateTaskbarBtn(id, true);
+
+  if (id === 'explorer') {
+    feCurrent = 'root';
+    feHistory = ['root'];
+    feHistIdx = 0;
+    feRender();
+  }
+}
+
+function bringToFront(win) {
+  win.style.zIndex = ++zBase;
+}
+
+function closeWin(id) {
+  const win = openWindows[id];
+  if (!win) return;
+  win.remove();
+  delete openWindows[id];
+  updateTaskbarBtn(id, false);
+}
+
+function minimizeWin(id) {
+  const win = openWindows[id];
+  if (!win) return;
+  win.style.display = win.style.display === 'none' ? 'flex' : 'none';
+}
+
+function maximizeWin(id) {
+  const win = openWindows[id];
+  if (!win) return;
+  if (win.dataset.maximized === '1') {
+    win.style.left = win.dataset.ox;
+    win.style.top = win.dataset.oy;
+    win.style.width = win.dataset.ow;
+    win.style.height = win.dataset.oh;
+    win.dataset.maximized = '0';
+    win.classList.remove('maximized');
+  } else {
+    win.dataset.ox = win.style.left;
+    win.dataset.oy = win.style.top;
+    win.dataset.ow = win.style.width;
+    win.dataset.oh = win.style.height;
+    win.style.left = '0'; win.style.top = '0';
+    win.style.width = document.getElementById('desktop').clientWidth + 'px';
+    win.style.height = (document.getElementById('desktop').clientHeight - 48) + 'px';
+    win.dataset.maximized = '1';
+    win.classList.add('maximized');
+  }
+}
+
+function updateTaskbarBtn(id, open) {
+  const btn = document.getElementById(`tb-${id}`);
+  if (btn) btn.classList.toggle('active', open);
+}
+
+function powerMenu() {
+  alert('Power options:\n• Sleep\n• Shut down\n• Restart');
+}
+
+// =================== DRAG ===================
+function makeDraggable(win, id) {
+  const titlebar = win.querySelector('.win-titlebar');
+  let dragging = false, ox, oy, sx, sy;
+  const snapPrev = document.getElementById('snap-preview');
+  const desktop = document.getElementById('desktop');
+
+  titlebar.addEventListener('mousedown', e => {
+    if (e.target.closest('.win-controls')) return;
+    if (win.dataset.maximized === '1') return;
+    dragging = true;
+    sx = e.clientX; sy = e.clientY;
+    ox = win.offsetLeft; oy = win.offsetTop;
+    bringToFront(win);
+    closeStart();
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    let nx = ox + e.clientX - sx;
+    let ny = oy + e.clientY - sy;
+    const dw = desktop.clientWidth, dh = desktop.clientHeight - 48;
+
+    // Snap to edges
+    let snapShown = false;
+    if (e.clientX < 8) { // Left half
+      snapPrev.style.cssText = `display:block;left:0;top:0;width:50%;height:${dh}px`;
+      snapShown = true;
+    } else if (e.clientX > dw - 8) { // Right half
+      snapPrev.style.cssText = `display:block;left:50%;top:0;width:50%;height:${dh}px`;
+      snapShown = true;
+    } else if (e.clientY < 6) { // Maximize
+      snapPrev.style.cssText = `display:block;left:0;top:0;width:100%;height:${dh}px`;
+      snapShown = true;
+    } else {
+      snapPrev.style.display = 'none';
+    }
+
+    win.style.left = nx + 'px';
+    win.style.top = Math.max(0, ny) + 'px';
+  });
+
+  document.addEventListener('mouseup', e => {
+    if (!dragging) return;
+    dragging = false;
+    snapPrev.style.display = 'none';
+    const dw = desktop.clientWidth, dh = desktop.clientHeight - 48;
+
+    // Snap action
+    if (e.clientX < 8) {
+      win.style.left='0';win.style.top='0';
+      win.style.width=(dw/2)+'px';win.style.height=dh+'px';
+    } else if (e.clientX > dw - 8) {
+      win.style.left=(dw/2)+'px';win.style.top='0';
+      win.style.width=(dw/2)+'px';win.style.height=dh+'px';
+    } else if (e.clientY < 6) {
+      maximizeWin(id);
+    }
+  });
+
+  // Double-click titlebar to maximize
+  titlebar.addEventListener('dblclick', () => maximizeWin(id));
+}
+
+// =================== RESIZE ===================
+function makeResizable(win) {
+  const handles = win.querySelectorAll('.resize-handle');
+  handles.forEach(handle => {
+    let resizing = false, dir, startX, startY, startL, startT, startW, startH;
+    handle.addEventListener('mousedown', e => {
+      e.stopPropagation(); e.preventDefault();
+      resizing = true; dir = handle.dataset.dir;
+      startX = e.clientX; startY = e.clientY;
+      startL = win.offsetLeft; startT = win.offsetTop;
+      startW = win.offsetWidth; startH = win.offsetHeight;
+      bringToFront(win);
+    });
+    document.addEventListener('mousemove', e => {
+      if (!resizing) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      const minW = 320, minH = 220;
+      let nl=startL,nt=startT,nw=startW,nh=startH;
+      if(dir.includes('e')) nw=Math.max(minW,startW+dx);
+      if(dir.includes('s')) nh=Math.max(minH,startH+dy);
+      if(dir.includes('w')){nw=Math.max(minW,startW-dx);nl=startL+startW-nw;}
+      if(dir.includes('n')){nh=Math.max(minH,startH-dy);nt=startT+startH-nh;}
+      win.style.left=nl+'px';win.style.top=nt+'px';
+      win.style.width=nw+'px';win.style.height=nh+'px';
+    });
+    document.addEventListener('mouseup', () => { resizing = false; });
+  });
+}
+
+// Open taskbar apps on click
+document.querySelectorAll('.tb-btn[id^="tb-"]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const id=btn.id.replace('tb-','');
+    if(openWindows[id]){
+      if(openWindows[id].style.display==='none') openWindows[id].style.display='flex';
+      else bringToFront(openWindows[id]);
+    }
+  });
+});
+</script>
+</body>
+</html>
